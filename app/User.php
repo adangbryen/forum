@@ -24,6 +24,27 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'email',
     ];
+
+    public function getRouteKeyName()
+    {
+        return 'name';
+    }
+
+    public function threads()
+    {
+        return $this->hasMany(Thread::class)->latest();
+    }
+
+    public function isAdmin()
+    {
+        return $this->name == 'admin';
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
+
 }
