@@ -8,23 +8,22 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class FavoritesTest extends TestCase
 {
     use DatabaseMigrations;
-    
+
     /** @test */
-    function guest_cannot_favorite_anything()
+    public function guest_cannot_favorite_anything()
     {
         $this->post('/replies/1/favorites')
             ->assertRedirect('/login');
     }
 
-
     /** @test */
     public function an_authenticated_user_can_favorite_any_reply()
     {
-        $this->singIn();
+        $this->signIn();
         $this->withoutExceptionHandling();
         $reply = create('App\Reply');
 
-        $this->post('/replies/' . $reply->id .'/favorites');
+        $this->post('/replies/' . $reply->id . '/favorites');
 
         $this->assertCount(1, $reply->favorites);
     }
@@ -32,33 +31,32 @@ class FavoritesTest extends TestCase
     /** @test */
     public function an_authenticated_user_can_unfavorite_a_reply()
     {
-        $this->singIn();
+        $this->signIn();
         $this->withoutExceptionHandling();
         $reply = create('App\Reply');
 
-        $this->post('/replies/' . $reply->id .'/favorites');
+        $this->post('/replies/' . $reply->id . '/favorites');
         $this->assertCount(1, $reply->favorites);
 
-        $this->delete('/replies/' . $reply->id .'/favorites');
+        $this->delete('/replies/' . $reply->id . '/favorites');
 
         $this->assertCount(0, $reply->fresh()->favorites);
     }
-    
+
     /** @test */
-    function an_authenticated_user_can_favorite_a_reply_once()
+    public function an_authenticated_user_can_favorite_a_reply_once()
     {
-        $this->singIn();
+        $this->signIn();
         $this->withoutExceptionHandling();
         $reply = create('App\Reply');
 
         try {
-            $this->post('/replies/' . $reply->id .'/favorites');
-            $this->post('/replies/' . $reply->id .'/favorites');
+            $this->post('/replies/' . $reply->id . '/favorites');
+            $this->post('/replies/' . $reply->id . '/favorites');
         } catch (\Exception $e) {
             $this->fail('twice');
         }
 
         $this->assertCount(1, $reply->favorites);
-
     }
 }

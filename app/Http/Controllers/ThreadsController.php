@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Channel;
 use App\Thread;
-use App\User;
 use App\Filters\ThreadFilter;
 use Illuminate\Http\Request;
+use App\Rules\SpamFree;
 
 class ThreadsController extends Controller
 {
@@ -27,14 +27,15 @@ class ThreadsController extends Controller
     {
         $threads = Thread::latest()->filter($filters);
 
-        if($channel->exists) {
+        if ($channel->exists) {
             $threads = $threads->where('channel_id', $channel->id);
         }
 
         $threads = $threads->get();
 
-        if (request()->wantsJson())
+        if (request()->wantsJson()) {
             return $threads;
+        }
 
         return view('threads.index', compact('threads'));
     }
@@ -58,8 +59,8 @@ class ThreadsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required',
-            'body' => 'required',
+            'title' => ['required', new SpamFree],
+            'body' => ['required', new SpamFree],
             'channel_id' => 'required|exists:channels,id'
         ]);
 
@@ -69,7 +70,7 @@ class ThreadsController extends Controller
             'title' => request('title'),
             'body' => request('body')
         ]);
-        
+
         return redirect($thread->path())->with('flash', '做的好');
     }
 
@@ -81,8 +82,9 @@ class ThreadsController extends Controller
      */
     public function show($channelId, Thread $thread)
     {
-//        return $thread->replies;
-
+        if (auth()->check()) {
+            auth()->user()->readThread($thread);
+        }
         return view('threads.show', compact('thread'));
     }
 
@@ -120,9 +122,10 @@ class ThreadsController extends Controller
         $this->authorize('update', $thread);
 
         $thread->delete();
-        if(request()->wantsJson())
+        if (request()->wantsJson()) {
             return response([], 204);
-        
+        }
+
         return redirect('/threads');
     }
 }

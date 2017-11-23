@@ -2,12 +2,12 @@
 
 namespace App\Filters;
 
-use Illuminate\Http\Request;
 use App\User;
 
 class ThreadFilter extends Filter
 {
-    protected $filters = ['by', 'popular'];
+    protected $filters = ['by', 'popular', 'unanswered'];
+
     /**
      * @param $builder
      * @param $username
@@ -24,5 +24,10 @@ class ThreadFilter extends Filter
     {
         $this->builder->getQuery()->orders = [];
         return $this->builder->orderBy('replies_count', 'desc');
+    }
+
+    public function unanswered()
+    {
+        return $this->builder->where('replies_count', 0);
     }
 }

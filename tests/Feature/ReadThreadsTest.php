@@ -18,31 +18,21 @@ class ReadThreadsTest extends TestCase
     }
 
     /** @test */
-    function a_user_can_browse_threads()
+    public function a_user_can_browse_threads()
     {
         $response = $this->get('/threads');
         $response->assertSee($this->thread->title);
-}
+    }
 
     /** @test */
-    function a_user_can_read_a_single_thread()
+    public function a_user_can_read_a_single_thread()
     {
         $response = $this->get($this->thread->path());
         $response->assertSee($this->thread->title);
-
     }
-    
-    /** @test */
-    function a_user_can_read_replies_that_associated_with_a_thread()
-    {
-        $reply =create('App\Reply', ['thread_id' => $this->thread->id]);
 
-        $this->get($this->thread->path())
-            ->assertSee($reply->body);
-    }
-    
     /** @test */
-    function a_user_can_filter_threads_according_to_a_channel()
+    public function a_user_can_filter_threads_according_to_a_channel()
     {
         $channel = create('App\Channel');
         $threadsInChannel = create('App\Thread', ['channel_id' => $channel->id]);
@@ -52,11 +42,11 @@ class ReadThreadsTest extends TestCase
             ->assertSee($threadsInChannel->title)
             ->assertDontSee($threadsNotInChannel->title);
     }
-    
+
     /** @test */
-    function a_user_can_filter_threads_by_a_username()
+    public function a_user_can_filter_threads_by_a_username()
     {
-        $this->singIn(create('App\User', ['name' => 'foo']));
+        $this->signIn(create('App\User', ['name' => 'foo']));
 
         $threadByFoo = create('App\Thread', ['user_id' => auth()->id()]);
         $threadNotByFoo = create('App\Thread');
@@ -65,9 +55,9 @@ class ReadThreadsTest extends TestCase
             ->assertSee($threadByFoo->title)
             ->assertDontSee($threadNotByFoo->title);
     }
-    
+
     /** @test */
-    function a_user_can_filter_threads_by_populority()
+    public function a_user_can_filter_threads_by_populority()
     {
         $threadsOne = create('App\Thread');
         $threadsTwo = create('App\Thread');
@@ -80,6 +70,31 @@ class ReadThreadsTest extends TestCase
         $response = $this->getJson('/threads?popular=1')->json();
 //        $response = $this->getJson('/threads')->json();
 
-        $this->assertEquals([3,2,1,0], array_column($response, 'replies_count'));
+        $this->assertEquals([3, 2, 1, 0], array_column($response, 'replies_count'));
+    }
+
+    /** @test */
+    public function a_user_can_filter_threads_by_unanswered()
+    {
+        $thread = \create('App\Thread');
+
+        \create('App\Reply', ['thread_id' => $thread->id]);
+
+        $response = $this->getJson('/threads?unanswered=1')->json();
+
+        $this->assertCount(1, $response);
+    }
+
+    /** @test */
+    public function a_user_can_request_all_replies_of_any_thread()
+    {
+        $thread = \create('App\Thread');
+
+        \create('App\Reply', ['thread_id' => $thread->id], 3);
+
+        $response = $this->getJson($thread->path() . '/replies')->json();
+
+        $this->assertCount(1, $response['data']);
+        $this->assertEquals(3, $response['total']);
     }
 }

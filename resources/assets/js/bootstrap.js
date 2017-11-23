@@ -13,6 +13,12 @@ try {
     require('bootstrap-sass');
 } catch (e) {}
 
+Vue.prototype.$auth = function (handler) {
+    let user = window.App.user;
+    
+    return user ? handler(window.App.user) : false;
+} 
+
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the
@@ -39,6 +45,6 @@ if (token) {
 
 window.events = new Vue();
 
-window.flash = function (message) {
-    window.events.$emit('flash', message)
+window.flash = function (message, level = 'success') {
+    window.events.$emit('flash', { message, level })
 };

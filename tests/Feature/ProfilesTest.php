@@ -8,8 +8,8 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class ProfilesTest extends TestCase
 {
     use DatabaseMigrations;
-    
-    /** @test */ 
+
+    /** @test */
     public function a_user_has_a_profile()
     {
         $user = create('App\User');
@@ -17,11 +17,11 @@ class ProfilesTest extends TestCase
         $this->get('/profiles/' . $user->name)
             ->assertSee($user->name);
     }
-    
+
     /** @test */
-    function profiles_display_all_threads_by_the_associated_user()
+    public function profiles_display_all_threads_by_the_associated_user()
     {
-        $this->singIn();
+        $this->signIn();
         $user = auth()->user();
         $thread = create('App\Thread', ['user_id' => $user->id]);
 

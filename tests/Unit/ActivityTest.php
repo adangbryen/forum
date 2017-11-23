@@ -14,7 +14,7 @@ class ActivityTest extends TestCase
     /** @test */
     public function it_records_activity_when_a_thread_is_created()
     {
-        $this->singIn();
+        $this->signIn();
 
         $thread = create('App\Thread');
 
@@ -26,17 +26,17 @@ class ActivityTest extends TestCase
     /** @test */
     public function it_records_activity_when_a_reply_is_created()
     {
-       $this->singIn();
+        $this->signIn();
 
-       create('App\Reply');
+        create('App\Reply');
 
-       $this->assertEquals(2, Activity::count());
+        $this->assertEquals(2, Activity::count());
     }
-    
+
     /** @test */
-    function it_fetches_a_feed_for_any_user()
+    public function it_fetches_a_feed_for_any_user()
     {
-        $this->singIn();
+        $this->signIn();
 
         create('App\Thread', ['user_id' => auth()->id()], 2);
         auth()->user()->activities()->first()->update(['created_at' => Carbon::now()->subWeek()]);
