@@ -10,10 +10,13 @@ class RegisterConfirmationController extends Controller
 {
     public function index()
     {
-        User::where('confirmation_token', request('token'))
-            ->firstOrFail()
-            ->confirm();
-
+        $user = User::where('confirmation_token', request('token'))
+            ->firstOrFail();
+        if (!$user) {
+            return \redirect('/threads')
+                ->with('flash', 'Invalid Token');
+        }
+        $user->confirm();
         return \redirect('/threads')
                 ->with('flash', 'You are confirmed!!');
     }
