@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PleaseConfirmYourEmail;
 use App\User;
@@ -18,7 +17,12 @@ class RegistrationTest extends TestCase
     {
         Mail::fake();
 
-        event(new Registered(create('App\User')));
+        $this->post('/register', [
+            'name' => 'test',
+            'email' => 'testf@testf.com',
+            'password' => '123456',
+            'password_confirmation' => '123456'
+        ]);
 
         Mail::assertSent(PleaseConfirmYourEmail::class);
     }
@@ -28,10 +32,11 @@ class RegistrationTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'test',
-            'email' => 'test@test.com',
+            'email' => 'test3@test.com',
             'password' => '123456',
             'password_confirmation' => '123456'
         ]);
+
         $user = User::whereName('test')->first();
 
         $this->assertFalse($user->confirmed);

@@ -20,9 +20,15 @@ class CreateThreadTest extends TestCase
     }
 
     /** @test */
-    public function user_must_confirm_their_mail_address_before_creating_threads()
+    public function new_user_must_confirm_their_mail_address_before_creating_threads()
     {
-        $this->publishThread()
+        $user = factory('App\User')->states('unconfirmed')->create();
+
+        $this->signIn($user);
+
+        $thread = make('App\Thread');
+
+        $this->post('/threads', $thread->toArray())
             ->assertRedirect('/threads');
     }
 
