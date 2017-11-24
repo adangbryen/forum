@@ -7,6 +7,7 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PleaseConfirmYourEmail;
 use App\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class RegistrationTest extends TestCase
 {
@@ -24,12 +25,14 @@ class RegistrationTest extends TestCase
             'password_confirmation' => '123456'
         ]);
 
-        Mail::assertSent(PleaseConfirmYourEmail::class);
+        $this->assertTrue(Mail::hasQueued(PleaseConfirmYourEmail::class));
     }
 
     /** @test */
     public function it_can_fully_confirm_their_email_addresses()
     {
+        Mail::fake();
+
         $this->post('/register', [
             'name' => 'test',
             'email' => 'test3@test.com',
@@ -48,5 +51,14 @@ class RegistrationTest extends TestCase
         $this->assertTrue($user->fresh()->confirmed);
 
         $response->assertRedirect('/threads');
+    }
+
+    /** @test */
+    public function confirming_an_invalid_token()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->expectException(ModelNotFoundException::class);
+        $this->get(route('register.confirm', ['token' => 'invalid']));
     }
 }
