@@ -15,6 +15,9 @@
 </template>
 
 <script>
+import 'at.js';
+import 'jquery.caret';
+
 export default {
     
     data() {
@@ -31,6 +34,20 @@ export default {
         endpoint() {
             return location.pathname + '/replies';
         }
+    },
+
+    mounted() {
+        $('#body').atwho({
+            at: "@",
+            delay: 750,
+            callbacks: {
+                remoteFilter: function(query, callback) {
+                    $.getJSON("/api/users", {name: query}, function(names) {
+                        callback(names);
+                    })
+                }
+            }
+        })
     },
 
     methods: {
@@ -51,5 +68,5 @@ export default {
 </script>
 
 <style>
-
+@import '../../../../public/css/vendor/jquery.atwho.css';
 </style>

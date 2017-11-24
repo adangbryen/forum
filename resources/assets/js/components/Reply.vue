@@ -19,15 +19,17 @@
         </div>
 
         <div class="panel-body">
-            <div v-if="editing">
-                <div class="form-group">
-                    <textarea v-model="body" rows="5" class="form-control"></textarea>
-                </div>
+            <form @submit="update">
+                <div v-if="editing">
+                    <div class="form-group">
+                        <textarea v-model="body" rows="5" class="form-control" required></textarea>
+                    </div>
 
-                <button class="btn btn-xs btn-primary" @click="update">Update</button>
-                <button class="btn btn-xs btn-link" @click="cancel">Cancel</button>
-            </div>
-            <div v-else v-text="body"></div>
+                    <button class="btn btn-xs btn-primary">Update</button>
+                    <button class="btn btn-xs btn-link" @click="cancel" type="button">Cancel</button>
+                </div>
+                <div v-else v-html="body"></div>
+            </form>
         </div>
 
         <div class="panel-footer level" v-if="canUpdate">
@@ -99,9 +101,7 @@ export default {
 
         cancel() {
             this.editing = false;
-            console.log(this.reply.body);
             this.body = this.reply.body;
-            console.log(this.body);
         }
     }
 };

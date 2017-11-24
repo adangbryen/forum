@@ -8,8 +8,12 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <div class="level">
-                            <span class="flex">
+                            <img scr="{{ $thread->creator->avatar_path }}"
+                                alt=""
+                                width="50" height="50"
+                                class="mr-1">
 
+                            <span class="flex">
                             <a href="{{ '/profiles/' . $thread->creator->name }}">
                                 {{ $thread->creator->name }}
                             </a>
