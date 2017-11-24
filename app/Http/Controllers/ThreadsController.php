@@ -7,6 +7,7 @@ use App\Thread;
 use App\Filters\ThreadFilter;
 use Illuminate\Http\Request;
 use App\Rules\SpamFree;
+use App\Trending;
 
 class ThreadsController extends Controller
 {
@@ -23,7 +24,7 @@ class ThreadsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Channel $channel, ThreadFilter $filters)
+    public function index(Channel $channel, ThreadFilter $filters, Trending $trending)
     {
         $threads = Thread::latest()->filter($filters);
 
@@ -37,7 +38,10 @@ class ThreadsController extends Controller
             return $threads;
         }
 
-        return view('threads.index', compact('threads'));
+        return view('threads.index', [
+                'threads' => $threads,
+                'trending' => $trending->get()
+        ]);
     }
 
     /**
@@ -80,11 +84,16 @@ class ThreadsController extends Controller
      * @param  \App\Thread  $thread
      * @return \Illuminate\Http\Response
      */
-    public function show($channelId, Thread $thread)
+    public function show($channelId, Thread $thread, Trending $trending)
     {
         if (auth()->check()) {
             auth()->user()->readThread($thread);
         }
+
+        $trending->push($thread);
+
+        $thread->visits()->record();
+
         return view('threads.show', compact('thread'));
     }
 

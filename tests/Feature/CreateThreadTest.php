@@ -20,6 +20,13 @@ class CreateThreadTest extends TestCase
     }
 
     /** @test */
+    public function user_must_confirm_their_mail_address_before_creating_threads()
+    {
+        $this->publishThread()
+            ->assertRedirect('/threads');
+    }
+
+    /** @test */
     public function an_authenticated_user_can_create_new_forum_thread()
     {
         $this->actingAs(create('App\User'));
