@@ -35,6 +35,7 @@ class CreateThreadTest extends TestCase
     /** @test */
     public function an_authenticated_user_can_create_new_forum_thread()
     {
+        $this->withoutExceptionHandling();
         $this->actingAs(create('App\User'));
 
         $thread = make('App\Thread');
@@ -70,6 +71,38 @@ class CreateThreadTest extends TestCase
 
         $this->publishThread(['channel_id' => 999])
             ->assertSessionHasErrors('channel_id');
+    }
+
+    /** @test */
+    public function a_thread_requires_a_unique_slug()
+    {
+        $this->signIn();
+
+        create('App\Thread', [], 3);
+        $this->withoutExceptionHandling();
+        $thread = create('App\Thread', [
+            'title' => 'Foo',
+        ]);
+
+        $this->assertEquals($thread->fresh()->slug, 'foo');
+
+        $thread2 = $this->postJson(route('threads'), $thread->toArray())->json();
+
+        $this->assertEquals("foo-{$thread2['id']}", $thread2['slug']);
+    }
+
+    /** @test */
+    public function a_thread_with_a_title_ends_in_a_number_should_generate_the_proper_slug()
+    {
+        $this->signIn();
+        $this->withoutExceptionHandling();
+        $thread = create('App\Thread', [
+            'title' => 'Foo-24',
+        ]);
+
+        $thread2 = $this->postJson(route('threads'), $thread->toArray())->json();
+
+        $this->assertEquals("foo-24-{$thread2['id']}", $thread2['slug']);
     }
 
     /** @test */

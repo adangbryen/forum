@@ -16,6 +16,7 @@ class RegistrationTest extends TestCase
     /** @test */
     public function a_confirm_email_is_sent_when_registration()
     {
+        $this->withExceptionHandling();
         Mail::fake();
 
         $this->post('/register', [
@@ -25,6 +26,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => '123456'
         ]);
 
+        // Mail::assertSent(PleaseConfirmYourEmail::class);
         $this->assertTrue(Mail::hasQueued(PleaseConfirmYourEmail::class));
     }
 
