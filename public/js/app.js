@@ -3321,6 +3321,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 
 
@@ -51005,7 +51006,7 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "panel-footer level" }, [
-        _vm.authorize("updateReply", _vm.reply)
+        _vm.authorize("owns", _vm.reply)
           ? _c("div", [
               _c(
                 "button",
@@ -51038,8 +51039,8 @@ var render = function() {
               {
                 name: "show",
                 rawName: "v-show",
-                value: !_vm.isBest,
-                expression: "!isBest"
+                value: !_vm.isBest && _vm.authorize("owns", _vm.reply.thread),
+                expression: "!isBest && authorize('owns', reply.thread)"
               }
             ],
             staticClass: "btn btn-xs ml-a btn-default",
@@ -62640,6 +62641,11 @@ var user = window.App.user;
 module.exports = {
     updateReply: function updateReply(reply) {
         return reply.user_id === user.id;
+    },
+    owns: function owns(model) {
+        var prop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'user_id';
+
+        return model[prop] === user.id;
     }
 };
 

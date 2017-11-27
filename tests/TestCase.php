@@ -3,10 +3,18 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        Schema::enableForeignKeyConstraints();
+    }
 
     protected function signIn($user = null)
     {
