@@ -2884,7 +2884,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         canUpdate: function canUpdate() {
             var _this = this;
 
-            return this.$auth(function (user) {
+            return this.authorize(function (user) {
                 return user.id === _this.user.id;
             });
         }
@@ -3096,9 +3096,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
     computed: {
-        signedIn: function signedIn() {
-            return window.App.signedIn;
-        },
         endpoint: function endpoint() {
             return location.pathname + '/replies';
         }
@@ -3320,6 +3317,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 
 
@@ -3331,23 +3332,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     data: function data() {
         return {
+            id: this.reply.id,
             editing: false,
-            body: this.reply.body
+            body: this.reply.body,
+            isBest: this.reply.isBest
         };
+    },
+    created: function created() {
+        var _this = this;
+
+        window.events.$on('best-reply-selected', function (id) {
+            _this.isBest = id === _this.id;
+        });
     },
 
 
     computed: {
-        signedIn: function signedIn() {
-            return window.App.signedIn;
-        },
-        canUpdate: function canUpdate() {
-            var _this = this;
-
-            return this.$auth(function (user) {
-                return _this.reply.user_id === user.id;
-            });
-        },
         ago: function ago() {
             return __WEBPACK_IMPORTED_MODULE_1_moment___default()(this.reply.created_at).fromNow() + "...";
         }
@@ -3381,6 +3381,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         cancel: function cancel() {
             this.editing = false;
             this.body = this.reply.body;
+        },
+        markAsBestReply: function markAsBestReply() {
+            axios.post('/replies/' + this.reply.id + '/best');
+
+            window.events.$emit('best-reply-selected', this.reply.id);
         }
     }
 });
@@ -50923,7 +50928,11 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "panel panel-default", attrs: { id: "'reply-'+id" } },
+    {
+      staticClass: "panel",
+      class: _vm.isBest ? "panel-success" : "panel-default",
+      attrs: { id: "reply-" + _vm.id }
+    },
     [
       _c("div", { staticClass: "panel-heading" }, [
         _c(
@@ -50995,31 +51004,50 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
-      _vm.canUpdate
-        ? _c("div", { staticClass: "panel-footer level" }, [
-            _c(
-              "button",
-              {
-                staticClass: "btn btn-xs mr-1",
-                on: {
-                  click: function($event) {
-                    _vm.editing = true
+      _c("div", { staticClass: "panel-footer level" }, [
+        _vm.authorize("updateReply", _vm.reply)
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-xs mr-1",
+                  on: {
+                    click: function($event) {
+                      _vm.editing = true
+                    }
                   }
-                }
-              },
-              [_vm._v("Edit")]
-            ),
-            _vm._v(" "),
-            _c(
-              "button",
+                },
+                [_vm._v("Edit")]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-xs mr-1 btn-danger",
+                  on: { click: _vm.destroy }
+                },
+                [_vm._v("Delete")]
+              )
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
               {
-                staticClass: "btn btn-xs mr-1 btn-danger",
-                on: { click: _vm.destroy }
-              },
-              [_vm._v("Delete")]
-            )
-          ])
-        : _vm._e()
+                name: "show",
+                rawName: "v-show",
+                value: !_vm.isBest,
+                expression: "!isBest"
+              }
+            ],
+            staticClass: "btn btn-xs ml-a btn-default",
+            on: { click: _vm.markAsBestReply }
+          },
+          [_vm._v("Best Reply?")]
+        )
+      ])
     ]
   )
 }
@@ -62604,6 +62632,19 @@ var app = new Vue({
 
 /***/ }),
 
+/***/ "./resources/assets/js/authorizations.js":
+/***/ (function(module, exports) {
+
+var user = window.App.user;
+
+module.exports = {
+    updateReply: function updateReply(reply) {
+        return reply.user_id === user.id;
+    }
+};
+
+/***/ }),
+
 /***/ "./resources/assets/js/bootstrap.js":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -62622,11 +62663,23 @@ try {
     __webpack_require__("./node_modules/bootstrap-sass/assets/javascripts/bootstrap.js");
 } catch (e) {}
 
-Vue.prototype.$auth = function (handler) {
-    var user = window.App.user;
+var authorizations = __webpack_require__("./resources/assets/js/authorizations.js");
 
-    return user ? handler(window.App.user) : false;
+Vue.prototype.authorize = function () {
+    if (!window.App.user) return false;
+
+    for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
+        params[_key] = arguments[_key];
+    }
+
+    if (typeof params[0] === 'string') {
+        return authorizations[params[0]](params[1]);
+    }
+
+    return params[0](window.App.user);
 };
+
+Vue.prototype.signedIn = window.App.signedIn;
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests

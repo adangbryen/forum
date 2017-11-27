@@ -13,11 +13,19 @@ try {
     require('bootstrap-sass');
 } catch (e) {}
 
-Vue.prototype.$auth = function (handler) {
-    let user = window.App.user;
+let authorizations = require('./authorizations');
+
+Vue.prototype.authorize = function (...params) {
+    if(! window.App.user) return false;
+
+    if (typeof params[0] === 'string') {
+        return authorizations[params[0]](params[1]);        
+    }
     
-    return user ? handler(window.App.user) : false;
+    return params[0](window.App.user);
 } 
+
+Vue.prototype.signedIn = window.App.signedIn;
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests

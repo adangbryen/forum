@@ -1,5 +1,5 @@
 <template>
-    <div id="'reply-'+id" class="panel panel-default">
+    <div :id="'reply-'+id" class="panel" :class="isBest ? 'panel-success' : 'panel-default'">
         <div class="panel-heading">
             <div class="level">
                 <h5 class="flex">
@@ -32,9 +32,13 @@
             </form>
         </div>
 
-        <div class="panel-footer level" v-if="canUpdate">
-            <button class="btn btn-xs mr-1" @click="editing=true">Edit</button>
-            <button class="btn btn-xs mr-1 btn-danger" @click="destroy">Delete</button>
+        <div class="panel-footer level">
+            <div v-if="authorize('updateReply', reply)">
+                <button class="btn btn-xs mr-1" @click="editing=true">Edit</button>
+                <button class="btn btn-xs mr-1 btn-danger" @click="destroy">Delete</button>
+            </div>
+
+            <button class="btn btn-xs ml-a btn-default" @click="markAsBestReply" v-show="!isBest">Best Reply?</button>
         </div>
     </div>
 </template>
@@ -50,20 +54,20 @@ export default {
 
     data() {
         return {
+            id: this.reply.id,
             editing: false,
-            body: this.reply.body
+            body: this.reply.body,
+            isBest: this.reply.isBest,
         };
     },
 
+    created() {
+        window.events.$on('best-reply-selected', id=> {
+            this.isBest = (id === this.id);
+        });
+    },
+
     computed: {
-        signedIn() {
-            return window.App.signedIn;
-        },
-
-        canUpdate() {
-            return this.$auth(user => this.reply.user_id === user.id);
-        },
-
         ago() {
             return moment(this.reply.created_at).fromNow() + "...";
         }
@@ -102,6 +106,12 @@ export default {
         cancel() {
             this.editing = false;
             this.body = this.reply.body;
+        },
+
+        markAsBestReply() {
+            axios.post('/replies/' + this.reply.id + '/best');
+
+            window.events.$emit('best-reply-selected', this.reply.id);
         }
     }
 };

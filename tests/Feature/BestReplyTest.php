@@ -13,9 +13,29 @@ class BestReplyTest extends TestCase
     public function a_thread_creator_may_mark_any_reply_as_the_best_reply()
     {
         $this->signIn();
+        $this->withoutExceptionHandling();
+        $thread = create('App\Thread', ['user_id' => auth()->id()]);
 
-        $thread = create('App\Thread');
+        $replies = create('App\Reply', ['thread_id' => $thread->id], 2);
 
-        create('App\Repley', ['thread_id' => $thread->id], 2);
+        $this->assertFalse($replies[1]->fresh()->isBest());
+        $this->postJson(route('best-replies.store', $replies[1]->id));
+
+        $this->assertTrue($replies[1]->fresh()->isBest());
+    }
+
+    /** @test */
+    public function only_the_thread_creator_can_mark_a_reply_as_the_best()
+    {
+        $this->signIn();
+
+        $this->withExceptionHandling();
+        $thread = create('App\Thread', ['user_id' => auth()->id()]);
+        $replies = create('App\Reply', ['thread_id' => $thread->id], 2);
+
+        $this->signIn(create('App\User'));
+        $this->postJson(route('best-replies.store', $replies[1]->id));
+
+        $this->assertFalse($replies[1]->fresh()->isBest());
     }
 }

@@ -19,7 +19,6 @@ import 'at.js';
 import 'jquery.caret';
 
 export default {
-    
     data() {
         return {
             body: ''
@@ -27,10 +26,6 @@ export default {
     },
 
     computed: {
-        signedIn() {
-            return window.App.signedIn; 
-        },
-
         endpoint() {
             return location.pathname + '/replies';
         }

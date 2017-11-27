@@ -26,7 +26,7 @@ export default {
     },
     computed: {
         canUpdate() {
-            return this.$auth(user => user.id === this.user.id) 
+            return this.authorize(user => user.id === this.user.id) 
         }
     },
 
