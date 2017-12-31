@@ -22,6 +22,7 @@ class CreateThreadsTable extends Migration
             $table->string('title')->nullable();
             $table->text('body')->nullable();
             $table->unsignedInteger('best_reply_id')->nullable();
+            $table->boolean('locked')->default(false);
             $table->timestamps();
 
             $table->foreign('best_reply_id')

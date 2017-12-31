@@ -95,7 +95,7 @@ class CreateThreadTest extends TestCase
     public function a_thread_with_a_title_ends_in_a_number_should_generate_the_proper_slug()
     {
         $this->signIn();
-        $this->withoutExceptionHandling();
+        $this->withExceptionHandling();
         $thread = create('App\Thread', [
             'title' => 'Foo-24',
         ]);
